@@ -14,15 +14,15 @@ type e =
 type b =
   | True
   | False
-  | And of e * e (* <e> and <e> *)
-  | Not of b (* not <e> *)
+  | And of e * e  (* <e> and <e> *)
+  | Not of b      (* not <e> *)
   | Less of e * e (* <e> < <e> *)
 
 type cmd =
   | Assign of string * e (* <var> := <e> *)
-  | CSeq of cmd * cmd (* <cmd>;<cmd> *)
-  | If of b * cmd * cmd (* if <b> then <cmd> else <cmd> *)
-  | While of b * cmd (* while <b> do <cmd> *)
+  | Seq of cmd * cmd     (* <cmd>;<cmd> *)
+  | If of b * cmd * cmd  (* if <b> then <cmd> else <cmd> *)
+  | While of b * cmd     (* while <b> do <cmd> *)
 
 type prog =
   | Prog of string * string * cmd (* def main with input <var> output <var> as <cmd> *)
@@ -63,7 +63,7 @@ type token =
   | TInt of int
   | TEOF
 
-(* helper functions*)
+(* HELPERS *)
 let is_digit c = match c with '0' .. '9' -> true | _ -> false
 let is_alpha c = match c with 'a' .. 'z' | 'A' .. 'Z' | '_' -> true | _ -> false
 let is_alphanum c = is_alpha c || is_digit c
@@ -167,7 +167,8 @@ let parse src =
   let consume () =
     match !tokens with
     | [] -> raise (LexerError "unexpected end of input")
-    | t :: ts -> tokens := ts ;t
+    | t :: ts ->
+        tokens := ts ; t
   in
   let expect t =
     if lookahead () = t then ignore (consume ())
@@ -193,27 +194,39 @@ let parse src =
     let cmd = parse_cmd () in
     Prog (input_var, output_var, cmd)
   and parse_cmd () =
-    match lookahead () with
+  let base = match lookahead () with
     | TKeyword TIf ->
-        ignore (consume ()) ;
+        ignore (consume ());
         let cond = parse_b () in
-        expect (TKeyword TThen) ;
+        expect (TKeyword TThen);
         let then_cmd = parse_cmd () in
-        expect (TKeyword TElse) ;
+        expect (TKeyword TElse);
         let else_cmd = parse_cmd () in
         If (cond, then_cmd, else_cmd)
     | TKeyword TWhile ->
-        ignore (consume ()) ;
+        ignore (consume ());
         let cond = parse_b () in
-        expect (TKeyword TDo) ;
-        let body_cmd = parse_cmd () in
-        While (cond, body_cmd)
+        expect (TKeyword TDo);
+        let body = parse_cmd () in
+        While (cond, body)
+    | TLParent ->
+        ignore (consume ());
+        let cmd = parse_cmd () in
+        expect TRParent;
+        cmd
     | TVar v ->
-        ignore (consume ()) ;
-        expect TAssign ;
+        ignore (consume ());
+        expect TAssign;
         let expr = parse_e () in
         Assign (v, expr)
     | t -> raise (LexerError ("unexpected token in command: " ^ string_of_token t))
+  in
+  match lookahead () with
+  | TSem ->
+      ignore (consume ());
+      let rest = parse_cmd () in
+      Seq (base, rest)
+  | _ -> base
   and parse_e () =
     let rec parse_e_prec min_prec =
       let parse_primary () =
