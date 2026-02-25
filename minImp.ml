@@ -2,6 +2,7 @@
 
 (*EXPECTIONS*)
 exception LexerError of string
+exception ParserError of string
 
 (* TYPES *)
 type e =
@@ -64,6 +65,7 @@ type token =
   | TEOF
 
 (* HELPERS *)
+
 let is_digit c = match c with '0' .. '9' -> true | _ -> false
 let is_alpha c = match c with 'a' .. 'z' | 'A' .. 'Z' | '_' -> true | _ -> false
 let is_alphanum c = is_alpha c || is_digit c
@@ -83,7 +85,7 @@ let string_of_token t =
       | TWith -> "with"
       | TInput -> "input"
       | TOutput -> "output"
-      | TAs -> "as"
+      | TAs -> "as\n\t"
       | TTrue -> "true"
       | TFalse -> "false"
       | TIf -> "if"
@@ -107,6 +109,32 @@ let string_of_token t =
   | TInt i -> "integer " ^ string_of_int i
   | TEOF -> "end of file"
 
+let rec string_of_ast p =
+  match p with
+  | Prog (input_var, output_var, cmd) ->
+      "Prog (" ^ input_var ^ ", " ^ output_var ^ ", " ^ string_of_cmd cmd ^ ")"
+and string_of_cmd c =
+  match c with
+  | Assign (v, e) -> v ^ "Assign(" ^ v ^ ", " ^ string_of_e e ^ ")"
+  | Seq (c1, c2) -> "Seq(" ^ string_of_cmd c1 ^ ", " ^ string_of_cmd c2 ^ ")"
+  | If (b, c1, c2) -> "If(" ^ string_of_b b ^ ", " ^ string_of_cmd c1 ^ ", " ^ string_of_cmd c2 ^ ")"
+  | While (b, c) -> "While(" ^ string_of_b b ^ ", " ^ string_of_cmd c ^ ")"
+and string_of_e e =
+  match e with
+  | Var v -> v
+  | Int i -> string_of_int i
+  | Add (e1, e2) -> "(" ^ string_of_e e1 ^ "+" ^ string_of_e e2 ^ ")"
+  | Sub (e1, e2) -> "(" ^ string_of_e e1 ^ "-" ^ string_of_e e2 ^ ")"
+  | Mul (e1, e2) -> "(" ^ string_of_e e1 ^ "*" ^ string_of_e e2 ^ ")"
+and string_of_b b =
+  match b with
+  | True -> "true"
+  | False -> "false"
+  | And (e1, e2) -> "(" ^ string_of_e e1 ^ " and " ^ string_of_e e2 ^ ")"
+  | Not b -> "(not " ^ string_of_b b ^ ")"
+  | Less (e1, e2) -> "(" ^ string_of_e e1 ^ "<" ^ string_of_e e2^ ")"
+
+(* LEXER *)
 
 let tokenize (src : string) : token list =
   let n = String.length src in
@@ -157,22 +185,23 @@ let tokenize (src : string) : token list =
   in
   tokenize_rec 0
 
+(* PARSER *)
 
 let parse src =
   let tokens = ref (tokenize src) in
 
   let lookahead () =
-    match !tokens with [] -> raise (LexerError "unexpected end of input") | t :: _ -> t
+    match !tokens with [] -> raise (ParserError "unexpected end of input") | t :: _ -> t
   in
   let consume () =
     match !tokens with
-    | [] -> raise (LexerError "unexpected end of input")
+    | [] -> raise (ParserError "unexpected end of input")
     | t :: ts ->
         tokens := ts ; t
   in
   let expect t =
     if lookahead () = t then ignore (consume ())
-    else raise (LexerError ("expected token: " ^ string_of_token t))
+    else raise (ParserError ("expected token: " ^ string_of_token t))
   in
   let rec parse_prog () =
     expect (TKeyword TDef) ;
@@ -182,13 +211,13 @@ let parse src =
     let input_var =
       match consume () with
       | TVar v -> v
-      | t -> raise (LexerError ("expected input variable, got: " ^ string_of_token t))
+      | t -> raise (ParserError ("expected input variable, got: " ^ string_of_token t))
     in
     expect (TKeyword TOutput) ;
     let output_var =
       match consume () with
       | TVar v -> v
-      | t -> raise (LexerError ("expected output variable, got: " ^ string_of_token t))
+      | t -> raise (ParserError ("expected output variable, got: " ^ string_of_token t))
     in
     expect (TKeyword TAs) ;
     let cmd = parse_cmd () in
@@ -219,7 +248,7 @@ let parse src =
         expect TAssign;
         let expr = parse_e () in
         Assign (v, expr)
-    | t -> raise (LexerError ("unexpected token in command: " ^ string_of_token t))
+    | t -> raise (ParserError ("unexpected token in command: " ^ string_of_token t))
   in
   match lookahead () with
   | TSem ->
@@ -242,7 +271,7 @@ let parse src =
             let e = parse_e_prec 0 in
             expect TRParent ;
             e
-        | t -> raise (LexerError ("unexpected token in expression: " ^ string_of_token t))
+        | t -> raise (ParserError ("unexpected token in expression: " ^ string_of_token t))
       in
       let rec parse_binop lhs prec =
         let op_prec =
@@ -293,6 +322,24 @@ let parse src =
             ignore (consume ()) ;
             let e2 = parse_e () in
             Less (e1, e2)
-        | t -> raise (LexerError ("unexpected token in boolean: " ^ string_of_token t)))
+        | t -> raise (ParserError ("unexpected token in boolean: " ^ string_of_token t)))
   in
   parse_prog ()
+
+(* TESTING *)
+
+let () =
+  let src =
+    "def main with input x output y as
+     y := 0;
+     while x < 10 do
+       y := y + x;
+       x := x + 1"
+  in
+  try
+    let ast = parse src in
+    print_endline (string_of_ast ast);
+    print_endline "Parsing successful!"
+  with
+  | LexerError msg -> print_endline ("Lexer error: " ^ msg)
+  | ParserError msg -> print_endline ("Parser error: " ^ msg)
