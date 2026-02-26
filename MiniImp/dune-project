@@ -1,0 +1,26 @@
+(lang dune 3.21)
+
+(name MiniImp)
+
+(generate_opam_files true)
+
+(source
+ (github Muxy03/CT_Project))
+
+(authors "Andrea Mussari <a.mussari@studenti.unipi.it>")
+
+(maintainers "Andrea Mussari <a.mussari@studenti.unipi.it>")
+
+(license LICENSE)
+
+(documentation TODO)
+
+(package
+ (name MiniImp)
+ (synopsis "A short synopsis")
+ (description "A longer description")
+ (depends ocaml)
+ (tags
+  ("add topics" "to describe" your project)))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
