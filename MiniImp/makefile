@@ -1,3 +1,6 @@
+LIBS := $(shell find lib -name "*.ml")
+MAIN := bin/main.ml
+
 .PHONY: all build run test clean watch help
 
 all: build
@@ -18,10 +21,10 @@ watch:
 	dune build --watch
 
 fmt:
-	ocamlformat --inplace lib/Lexer.ml lib/Parser.ml bin/main.ml
+	ocamlformat --inplace $(LIBS) $(MAIN)
 
 fmt-check:
-	ocamlformat --check lib/Lexer.ml lib/Parser.ml bin/main.ml
+	ocamlformat --check $(LIBS) $(MAIN)
 
 help:
 	@echo "Available targets:"

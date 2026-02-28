@@ -22,18 +22,16 @@ type cmd =
   | If of b * cmd * cmd (* if <b> then <cmd> else <cmd> *)
   | While of b * cmd (* while <b> do <cmd> *)
 
-type inputVar = InputVar of string (* renamed from TInput *)
-type outputVar = OutputVar of string (* renamed from TOutput *)
+type inputVar = InputVar of string * int option
+type outputVar = OutputVar of string
 
 type prog =
   | Prog of
       inputVar * outputVar * cmd (* def main with input <var> output <var> as <cmd> *)
 
-
-let rec string_of_ast p =
-  match p with
-  | Prog (InputVar i, OutputVar o, cmd) ->
-      "Prog (InputVar " ^ i ^ ", OutputVar " ^ o ^ ", " ^ string_of_cmd cmd ^ ")"
+let rec string_of_ast (Prog (InputVar (i, v), OutputVar o, cmd)) =
+  let var_str = match v with None -> i | Some n -> i ^ ":=" ^ string_of_int n in
+  "Prog (InputVar " ^ var_str ^ ", OutputVar " ^ o ^ ",\n " ^ string_of_cmd cmd ^ ")"
 
 
 and string_of_cmd c =
@@ -62,6 +60,7 @@ and string_of_b b =
   | Not b -> "(not " ^ string_of_b b ^ ")"
   | Less (e1, e2) -> "(" ^ string_of_e e1 ^ "<" ^ string_of_e e2 ^ ")"
 
+
 (* PARSER *)
 let parse src =
   let tokens = ref (Lexer.tokenize src) in
@@ -87,7 +86,20 @@ let parse src =
     expect (TKeyword TInput) ;
     let input_var =
       match consume () with
-      | TVar v -> InputVar v
+      | TVar v ->
+          let default =
+            match lookahead () with
+            | TAssign -> (
+                ignore (consume ()) ;
+                match consume () with
+                | TInt n -> Some n
+                | t ->
+                    raise
+                      (ParserError
+                         ("expected integer default, got: " ^ Lexer.string_of_token t)))
+            | _ -> None
+          in
+          InputVar (v, default)
       | t ->
           raise (ParserError ("expected input variable, got: " ^ Lexer.string_of_token t))
     in
@@ -140,7 +152,7 @@ let parse src =
     | _ -> base
   and parse_e () =
     let rec parse_e_prec min_prec =
-      let parse_primary () =
+      let parse_first () =
         match lookahead () with
         | TInt i ->
             ignore (consume ()) ;
@@ -166,7 +178,7 @@ let parse src =
           | _ -> -1
         in
         if op_prec >= prec then begin
-          let make_node =
+          let make_op =
             match consume () with
             | TOp TPlus -> fun l r -> Add (l, r)
             | TOp TMinus -> fun l r -> Sub (l, r)
@@ -174,12 +186,12 @@ let parse src =
             | _ -> assert false
           in
           let rhs = parse_e_prec (op_prec + 1) in
-          let new_lhs = make_node lhs rhs in
+          let new_lhs = make_op lhs rhs in
           parse_binop new_lhs prec
         end
         else lhs
       in
-      let lhs = parse_primary () in
+      let lhs = parse_first () in
       parse_binop lhs min_prec
     in
     parse_e_prec 0

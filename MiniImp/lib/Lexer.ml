@@ -36,7 +36,6 @@ type token =
   | TInt of int
   | TEOF
 
-
 let string_of_token t =
   match t with
   | TKeyword k -> (

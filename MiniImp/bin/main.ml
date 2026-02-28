@@ -1,11 +1,5 @@
 let () =
-  let src =
-    "def main with input x output y as\n\
-    \      y := 0;\n\
-    \      while x < 10 do\n\
-    \        y := y + x;\n\
-    \        x := x + 1"
-  in
+  let src = "def main with input x:=1 output y as\n      y := x < 2;\n" in
   try
     let ast = MiniImp.Parser.parse src in
     print_endline (MiniImp.Parser.string_of_ast ast) ;
