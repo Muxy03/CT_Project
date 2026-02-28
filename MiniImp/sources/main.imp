@@ -1,0 +1,7 @@
+def main with input x output y as    
+    y := 1;
+    x := 0;
+    while y < 10 do (
+        x := x + y;
+        y := y + 1
+    )

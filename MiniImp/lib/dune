@@ -1,3 +1,7 @@
 (library
- (name MiniImp)
- (modules Lexer Parser Helpers Runtime))
+ (name MiniImp))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser))

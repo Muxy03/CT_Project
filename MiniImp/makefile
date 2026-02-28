@@ -1,5 +1,7 @@
-LIBS := $(shell find lib -name "*.ml")
-MAIN := bin/main.ml
+LIBS  := $(shell find lib -name "*.ml")
+BUILD := _build/default/bin/main.exe
+MAIN  := bin/main.ml
+FILE  := main.imp
 
 .PHONY: all build run test clean watch help
 
@@ -9,7 +11,7 @@ build:
 	dune build
 
 run: build
-	dune exec _build/default/bin/main.exe
+	dune exec $(BUILD) -- sources/$(FILE)
 
 test: build
 	dune test

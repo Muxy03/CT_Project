@@ -7,3 +7,7 @@ let read src n pred pos =
   let rec aux i = if i < n && pred src.[i] then aux (i + 1) else i in
   let end_pos = aux pos in
   String.sub src pos (end_pos - pos)
+
+
+let last list = match List.rev list with [] -> None | h :: _ -> Some h
+
