@@ -21,18 +21,18 @@ type cmd =
   | While of b * cmd     (* while <b> do <cmd> *)
 
 type inputVar = InputVar of string * int option
-type outputVar = OutputVar of string
 
 type prog =
-  | Prog of inputVar * outputVar * cmd (* def main with input <var> output <var> as <cmd> *)
+  | Prog of inputVar * string * cmd (* def main with input <var> output <var> as <cmd> *)
 
-(* STRINGIFY FUNCTIONS *)
+(* HELPERS *)
 let rec string_of_e = function
   | Var v -> "Var(\"" ^ v ^ "\")"
   | Int i -> "Int(" ^ string_of_int i ^ ")"
   | Add (e1, e2) -> "Add(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
   | Sub (e1, e2) -> "Sub(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
   | Mul (e1, e2) -> "Mul(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
+
 
 let rec string_of_b = function
   | True -> "True"
@@ -41,36 +41,34 @@ let rec string_of_b = function
   | Not b -> "Not(" ^ string_of_b b ^ ")"
   | Less (e1, e2) -> "Less(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
 
+
 let rec string_of_cmd ind = function
-  | Assign (v, e) -> 
-      ind ^ "Assign(\"" ^ v ^ "\", " ^ string_of_e e ^ ")"
-  | Seq (c1, c2) -> 
-      ind ^ "Seq(\n" ^ 
-      string_of_cmd (ind ^ "  ") c1 ^ ",\n" ^ 
-      string_of_cmd (ind ^ "  ") c2 ^ "\n" ^ 
-      ind ^ ")"
-  | If (b, c1, c2) -> 
-      ind ^ "If(" ^ string_of_b b ^ ",\n" ^ 
-      string_of_cmd (ind ^ "  ") c1 ^ ",\n" ^ 
-      string_of_cmd (ind ^ "  ") c2 ^ "\n" ^ 
-      ind ^ ")"
-  | While (b, c) -> 
-      ind ^ "While(" ^ string_of_b b ^ ",\n" ^ 
-      string_of_cmd (ind ^ "  ") c ^ "\n" ^ 
-      ind ^ ")"
-  | CmdParen c -> 
-      ind ^ "CmdParen(\n" ^ 
-      string_of_cmd (ind ^ "  ") c ^ "\n" ^ 
-      ind ^ ")"
+  | Assign (v, e) -> ind ^ "Assign(Var(\"" ^ v ^ "\"), " ^ string_of_e e ^ ")"
+  | Seq (c1, c2) ->
+      ind ^ "Seq(\n"
+      ^ string_of_cmd (ind ^ "  ") c1
+      ^ ",\n"
+      ^ string_of_cmd (ind ^ "  ") c2
+      ^ "\n" ^ ind ^ ")"
+  | If (b, c1, c2) ->
+      ind ^ "If(" ^ string_of_b b ^ ",\n"
+      ^ string_of_cmd (ind ^ "  ") c1
+      ^ ",\n"
+      ^ string_of_cmd (ind ^ "  ") c2
+      ^ "\n" ^ ind ^ ")"
+  | While (b, c) ->
+      ind ^ "While(" ^ string_of_b b ^ ",\n"
+      ^ string_of_cmd (ind ^ "  ") c
+      ^ "\n" ^ ind ^ ")"
+  | CmdParen c -> ind ^ "CmdParen(\n" ^ string_of_cmd (ind ^ "  ") c ^ "\n" ^ ind ^ ")"
+
 
 let string_of_prog = function
-  | Prog (input, OutputVar out_name, cmd) -> 
-      let input_str = match input with
+  | Prog (input, output, cmd) ->
+      let input_str =
+        match input with
         | InputVar (name, None) -> name
-        | InputVar (name, Some default) -> name ^ " := " ^ string_of_int default 
+        | InputVar (name, Some default) -> name ^ " := " ^ string_of_int default
       in
-      "Prog(\n" ^
-      "  input " ^ input_str ^ ",\n" ^
-      "  output " ^ out_name ^ ",\n" ^
-      string_of_cmd "  " cmd ^ "\n" ^
-      ")"
+      "Prog(\n" ^ "  input " ^ input_str ^ ",\n" ^ "  output " ^ output ^ ",\n"
+      ^ string_of_cmd "  " cmd ^ "\n" ^ ")"

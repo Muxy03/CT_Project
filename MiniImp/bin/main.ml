@@ -9,24 +9,27 @@ let read_file path =
   close_in ic ;
   Bytes.to_string s
 
-(* STRINGIFYING *)
+
 let parse_string str =
   let lexbuf = Lexing.from_string str in
-  try
-    MiniImp.Parser.program MiniImp.Lexer.read lexbuf
-  with
+  try MiniImp.Parser.program MiniImp.Lexer.read lexbuf with
   | MiniImp.Lexer.SyntaxError msg ->
-      Printf.eprintf "Lexing error: %s\n" msg;
+      Printf.eprintf "Lexing error: %s\n" msg ;
       exit 1
   | MiniImp.Parser.Error ->
-      Printf.eprintf "Parsing error around character %d\n" (Lexing.lexeme_start lexbuf);
+      Printf.eprintf "Parsing error around character %d\n" (Lexing.lexeme_start lexbuf) ;
       exit 1
+
 
 let () =
   let sample_code = read_file Sys.argv.(1) in
-  
-  Printf.printf "--- Source Code ---\n%s\n\n" sample_code;
-  
+
+  Printf.printf "--- Source Code ---\n%s\n\n" sample_code ;
+
   let ast = parse_string sample_code in
-  
-  Printf.printf "--- Abstract Syntax Tree ---\n%s\n" (MiniImp.Ast.string_of_prog ast)
+
+  Printf.printf "--- Abstract Syntax Tree ---\n%s\n" (MiniImp.Ast.string_of_prog ast) ;
+
+  let result = MiniImp.Runtime.eval ast in
+
+  Printf.printf "--- Result ---\n%s\n" (MiniImp.Runtime.string_of_value result)

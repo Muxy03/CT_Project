@@ -30,11 +30,8 @@ type prog =
       inputVar * outputVar * cmd (* def main with input <var> output <var> as <cmd> *)
 
 let rec string_of_ast (Prog (InputVar (i, v), OutputVar o, cmd)) =
-  let var_str = 
-    match v with 
-    | None -> i 
-    | Some n -> i ^ ":=" ^ string_of_int n 
-  in "Prog (InputVar " ^ var_str ^ ", OutputVar " ^ o ^ ",\n " ^ string_of_cmd cmd ^ ")"
+  let var_str = match v with None -> i | Some n -> i ^ ":=" ^ string_of_int n in
+  "Prog (InputVar " ^ var_str ^ ", OutputVar " ^ o ^ ",\n " ^ string_of_cmd cmd ^ ")"
 
 
 and string_of_cmd c =
