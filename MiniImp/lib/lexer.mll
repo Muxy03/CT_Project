@@ -7,7 +7,7 @@ let white = [' ' '\t' '\n' '\r']+
 let letter = ['a'-'z' 'A'-'Z']
 let digit = ['0'-'9']
 let var = letter (letter | digit)*
-let int_num = digit+
+let int_num = '-'? digit+
 
 rule read = parse
   | white    { read lexbuf }
@@ -30,7 +30,7 @@ rule read = parse
   | ")"      { RPAREN }
   | ":="     { ASSIGN }
   | ";"      { SEMI }
-  | "<"      { LT }
+  | "<"      { LESS }
   | "+"      { PLUS }
   | "-"      { MINUS }
   | "*"      { TIMES }

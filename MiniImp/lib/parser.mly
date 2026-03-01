@@ -14,7 +14,7 @@ open Ast
 %token LPAREN RPAREN
 %token ASSIGN     
 %token SEMI      
-%token LT         
+%token LESS         
 %token PLUS MINUS
 %token TIMES
 %token EOF
@@ -22,8 +22,8 @@ open Ast
 /* Operator Precedences and Associativity
   Ordered from lowest precedence (top) to highest precedence (bottom).
 */
+%right ELSE DO
 %right SEMI
-%nonassoc ELSE DO
 %left AND
 %nonassoc NOT
 %left PLUS MINUS
@@ -34,23 +34,23 @@ open Ast
 
 %%
 
-// input_decl:
-//   | v=VAR 
-//       { InputVar(v, None) }
-//   | v=VAR ASSIGN i=INT 
-//       { InputVar(v, Some i) }
-// ;
-
-// program:
-//   | DEF MAIN WITH INPUT input=input_decl OUTPUT output=VAR AS c=cmd EOF
-//       { Prog(input, output, c) }
-// ;
+input_decl:
+  | v=VAR 
+      { InputVar(v, None) }
+  | v=VAR ASSIGN i=INT 
+      { InputVar(v, Some i) }
+;
 
 program:
-  | DEF MAIN WITH INPUT input=VAR OUTPUT output=VAR AS c=cmd EOF
-      /* We default the int option for InputVar to None since it's not in the grammar */
-      { Prog(InputVar(input, None), OutputVar(output), c) }
+  | DEF MAIN WITH INPUT input=input_decl OUTPUT output=VAR AS c=cmd EOF
+      { Prog(input, output, c) }
 ;
+
+// program:
+//   | DEF MAIN WITH INPUT input=VAR OUTPUT output=VAR AS c=cmd EOF
+//       /* We default the int option for InputVar to None since it's not in the grammar */
+//       { Prog(InputVar(input, None), OutputVar(output), c) }
+// ;
 
 cmd:
   | LPAREN c=cmd RPAREN
@@ -87,6 +87,6 @@ bexpr:
       { And(b1, b2) }
   | NOT b=bexpr
       { Not b }
-  | e1=expr LT e2=expr
+  | e1=expr LESS e2=expr
       { Less(e1, e2) }
 ;
