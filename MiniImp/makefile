@@ -5,7 +5,11 @@ FILE  := main.imp
 
 .PHONY: all build run test clean watch help
 
-all: build
+all: init build
+
+init:
+	opam switch
+	@echo "Run 'eval \$$(opam env)' in your shell to sync the environment"
 
 build:
 	dune build
