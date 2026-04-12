@@ -1,0 +1,27 @@
+# .ocamlformat
+version = 0.28.1
+
+profile = conventional
+
+# Line width
+margin = 90
+
+# Expressions
+break-separators = before
+sequence-style = separator
+cases-exp-indent = 4
+
+# Types
+type-decl = sparse
+field-space = loose
+
+# Let bindings
+let-binding-spacing = sparse
+
+# Parens
+parens-ite = false
+
+# Comments
+wrap-comments = true
+doc-comments = before
+doc-comments-padding = 2

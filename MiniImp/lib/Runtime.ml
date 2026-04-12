@@ -27,10 +27,10 @@ let mem_set mem var value =
   mem
 
 
-let init_capacity = 256
-
-let mem_init capacity =
-  match capacity with Some c -> Hashtbl.create c | None -> Hashtbl.create init_capacity
+  
+  let mem_init capacity =
+    let init_capacity = 256 in
+    match capacity with Some c -> Hashtbl.create c | None -> Hashtbl.create init_capacity
 
 
 (* EVALUATION *)
@@ -99,8 +99,8 @@ let eval prog =
       let memory = mem_init None in
       let mem0 =
         match input_val with
-        | Some v -> mem_set (mem_set memory input (Int v)) output Undefined
-        | None -> mem_set (mem_set memory input Undefined) output Undefined
+        | Some v -> mem_set  (mem_set memory input (Int v))   output Undefined
+        | None ->   mem_set  (mem_set memory input Undefined) output Undefined
       in
       let mem1 = eval_cmd mem0 (CmdParen cmd) in
       mem_get mem1 output

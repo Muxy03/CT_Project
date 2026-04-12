@@ -12,11 +12,11 @@ let read_file path =
 
 let parse_string str =
   let lexbuf = Lexing.from_string str in
-  try MiniImp.Parser.program MiniImp.Lexer.read lexbuf with
-  | MiniImp.Lexer.SyntaxError msg ->
+  try Parser.program Lexer.read lexbuf with
+  | Lexer.SyntaxError msg ->
       Printf.eprintf "Lexing error: %s\n" msg ;
       exit 1
-  | MiniImp.Parser.Error ->
+  | Parser.Error ->
       Printf.eprintf "Parsing error around character %d\n" (Lexing.lexeme_start lexbuf) ;
       exit 1
 
@@ -28,8 +28,11 @@ let () =
 
   let ast = parse_string sample_code in
 
-  Printf.printf "--- Abstract Syntax Tree ---\n%s\n" (MiniImp.Ast.string_of_prog ast) ;
+  Printf.printf "--- Abstract Syntax Tree ---\n%s\n" (Ast.string_of_prog ast) ;
 
-  let result = MiniImp.Runtime.eval ast in
-
-  Printf.printf "--- Result ---\n%s\n" (MiniImp.Runtime.string_of_value result)
+  try
+    let result = Runtime.eval ast in
+    Printf.printf "--- Result ---\n%s\n" (Runtime.string_of_value result)
+  with Runtime.RuntimeError msg ->
+    Printf.eprintf "--- Runtime Error ---\n%s\n" msg ;
+    exit 1
