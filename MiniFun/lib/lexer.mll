@@ -15,6 +15,8 @@ rule read = parse
   | "false"  { FALSE }
   | "fun"    { FUN }
   | "=>"     { ARROW }
+  | "->"     { TARROW }
+  | ":"      { COLON }
   | "if"     { IF }
   | "then"   { THEN }
   | "else"   { ELSE }
@@ -30,6 +32,8 @@ rule read = parse
   | "~"      { NOT }
   | "("      { LPAREN }
   | ")"      { RPAREN }
+  | "int"    { TINT }
+  | "bool"   { TBOOL }
   | var as v  { VAR v }
   | int_num as i { INT (int_of_string i) }
   | eof      { EOF }

@@ -1,1 +1,1 @@
-let a = 1 in let b = 1 in (fun y => y + a) 6
+letfun f x : int -> int = x + 1 in f
