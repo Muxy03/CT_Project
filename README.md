@@ -1,26 +1,28 @@
 ```bash
 .
 ├── MiniFun
-│   ├── _build
 │   ├── bin
-│   │   ├── dune
 │   │   └── main.ml
-│   ├── dune-project
-│   ├── lib
-│   │   └── dune
-│   ├── MiniFun.opam
-│   └── test
-│       ├── dune
-│       └── test_MiniFun.ml
-├── MiniImp
 │   ├── _build
-│   ├── bin
-│   │   ├── dune
-│   │   └── main.ml
-│   ├── dune-project
 │   ├── lib
+│   │   ├── AlgoW.ml
 │   │   ├── Ast.ml
 │   │   ├── dune
+│   │   ├── lexer.mll
+│   │   ├── parser.mly
+│   │   ├── RunTime.ml
+│   │   └── TypeChecker.ml
+│   ├── makefile
+│   ├── sources
+│   │   └── main.fun
+│   └── test
+│       └── test.ml
+├── MiniImp
+│   ├── bin
+│   │   └── main.ml
+│   ├── _build
+│   ├── lib
+│   │   ├── Ast.ml
 │   │   ├── lexer.mll
 │   │   ├── manual
 │   │   │   ├── Helpers.ml
@@ -29,11 +31,9 @@
 │   │   ├── parser.mly
 │   │   └── Runtime.ml
 │   ├── makefile
-│   ├── MiniImp.opam
 │   ├── sources
 │   │   └── main.imp
 │   └── test
-│       ├── dune
 │       └── test_MiniImp.ml
 └── README.md
 ```
@@ -48,7 +48,11 @@ MiniImp:
     - %right ELSE DO before %right SEMI
     - %right SEMI before %nonassoc ELSE DO
 MiniFun:
-  - TODO: Runtime Memory with hashtables
+  - RunTime ignore types because typechecking was already done.
 
 TODO:
-- 
+- MiniFun: Check Correct Associative of '->'
+- MiniFun: Check Typecheckers
+- MiniFun: Check test 3 of part 4
+- MiniFun: Collect implementation choice
+- MiniImp: Dataflow.pdf

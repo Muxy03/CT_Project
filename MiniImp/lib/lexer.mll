@@ -16,6 +16,7 @@ rule read = parse
   | "with"   { WITH }
   | "input"  { INPUT }
   | "output" { OUTPUT }
+  | "skip"   { SKIP }
   | "as"     { AS }
   | "if"     { IF }
   | "then"   { THEN }

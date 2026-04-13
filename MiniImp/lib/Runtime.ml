@@ -26,12 +26,9 @@ let mem_set mem var value =
   Hashtbl.replace mem var value ;
   mem
 
-
-  
   let mem_init capacity =
     let init_capacity = 256 in
     match capacity with Some c -> Hashtbl.create c | None -> Hashtbl.create init_capacity
-
 
 (* EVALUATION *)
 let rec eval_e mem = function
@@ -68,7 +65,7 @@ let rec eval_b mem = function
       | _ -> raise (RuntimeError "Type error in less-than comparison"))
 
 
-let rec eval_cmd mem = function
+let rec eval_cmd mem cmd = match cmd with
   | Ast.Assign (v, e) ->
       let value = eval_e mem e in
       if value = Undefined then
@@ -91,6 +88,7 @@ let rec eval_cmd mem = function
       | Bool false -> mem
       | _ -> raise (RuntimeError "Type error in while condition"))
   | CmdParen c -> eval_cmd mem c
+  | Skip ->  mem
 
 
 let eval prog =

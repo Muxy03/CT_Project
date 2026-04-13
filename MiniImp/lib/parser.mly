@@ -6,7 +6,7 @@ open Ast
 %token <string> VAR
 %token <int> INT
 
-%token DEF MAIN WITH INPUT OUTPUT AS
+%token DEF MAIN WITH INPUT OUTPUT AS SKIP
 %token IF THEN ELSE
 %token WHILE DO
 %token TRUE FALSE AND NOT
@@ -63,6 +63,8 @@ cmd:
       { If(b, c1, c2) }
   | WHILE b=bexpr DO c=cmd
       { While(b, c) }
+  | SKIP 
+      { Skip }
 ;
 
 expr:

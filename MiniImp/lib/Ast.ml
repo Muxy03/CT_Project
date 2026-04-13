@@ -19,6 +19,7 @@ type cmd =
   | Seq of cmd * cmd     (* <cmd>;<cmd> *)
   | If of b * cmd * cmd  (* if <b> then <cmd> else <cmd> *)
   | While of b * cmd     (* while <b> do <cmd> *)
+  | Skip
 
 type inputVar = InputVar of string * int option
 
@@ -61,7 +62,7 @@ let rec string_of_cmd ind = function
       ^ string_of_cmd (ind ^ "  ") c
       ^ "\n" ^ ind ^ ")"
   | CmdParen c -> ind ^ "CmdParen(\n" ^ string_of_cmd (ind ^ "  ") c ^ "\n" ^ ind ^ ")"
-
+  | Skip -> ind ^ "skip"
 
 let string_of_prog = function
   | Prog (input, output, cmd) ->
