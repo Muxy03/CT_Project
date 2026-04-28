@@ -44,9 +44,9 @@ let () =
   match ast with
   | Ast.Program (input_name, output_name, cmd) ->
       let cfg = Cfg.generate_cfg cmd in
-      Optimize.optimize cfg;
+      Optimize.optimize cfg output_name;
       let ir = Llvm.generate_llvm_ir cfg input_name output_name in
-      write_file "output.ll" ir;
+      write_file "generated/output.ll" ir;
       Printf.printf "✅ Codice IR salvato in: output.ll\n";
       (try
         let result = Runtime.eval ast in

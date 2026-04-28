@@ -28,7 +28,7 @@ open Ast
 %left     SEMI
 %left     AND
 %nonassoc NOT         /* unary operator */
-%nonassoc LESS        /* unary operator */
+/*%nonassoc LESS*/    /* unary operator */
 %left     PLUS MINUS
 %left     TIMES
 %nonassoc UMINUS      /* unary operator */

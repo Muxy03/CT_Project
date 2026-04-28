@@ -34,7 +34,7 @@
 │   ├── sources
 │   │   └── main.imp
 │   └── test
-│       └── test_MiniImp.ml
+│       └── test.ml
 └── README.md
 ```
 
@@ -52,5 +52,6 @@ TODO:
 - MiniFun: Check Correct Associative of '->'
 - MiniFun: Check Typecheckers
 - MiniFun: Check test 3 of part 4
+- MiniFun: Refactoring Claude
 - MiniFun: Collect implementation choice
 - MiniImp: Collect implementation choice

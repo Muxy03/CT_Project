@@ -5,14 +5,14 @@ let update_node (cfg : Cfg.cfg) id node block changed msg =
   Printf.printf "%s\n" msg
 
 (* DEAD STORE ELIMINATION *)
-let dead_store_elimination (cfg : Cfg.cfg) =
+let dead_store_elimination (cfg : Cfg.cfg) outVar =
   let liveness_map = DataFlow.compute_live_variables cfg in
   let changed = ref false in
   Hashtbl.iter (fun id node ->
     match node.Cfg.code with
     | Cfg.Stmt (Ast.Assign (v, _)) ->
         let state = DataFlow.NodeMap.find id liveness_map in
-        if not (DataFlow.VarSet.mem v state.DataFlow.liveOut) then
+        if not (DataFlow.VarSet.mem v state.DataFlow.liveOut) && v <> outVar then
           update_node cfg id node (Cfg.Stmt Ast.Skip) changed
             (Printf.sprintf "  [Dead Store Elim]    nodo %d: rimosso '%s := ...'" id v)
     | _ -> ()
@@ -128,17 +128,17 @@ let constant_propagation (cfg : Cfg.cfg) =
   !changed
 
 (* OPTIMIZATION PIPELINE *)
-let rec optimize_pipeline (cfg : Cfg.cfg) iter =
+let rec optimize_pipeline (cfg : Cfg.cfg) outVar iter =
   Printf.printf "\n--- Iterazione #%d ---\n" iter;
-  let c1 = constant_propagation  cfg in
-  let c2 = constant_folding      cfg in
-  let c3 = dead_store_elimination cfg in
+  let c1 = constant_propagation    cfg in
+  let c2 = constant_folding        cfg in
+  let c3 = dead_store_elimination  cfg outVar in
   if c1 || c2 || c3 then begin
     Printf.printf "  -> Modifiche rilevate, nuovo giro...\n";
-    optimize_pipeline cfg (iter + 1)
+    optimize_pipeline cfg outVar (iter + 1)
   end else
     Printf.printf "  -> Punto fisso raggiunto. ✅\n"
 
-let optimize (cfg : Cfg.cfg) : unit =
+let optimize (cfg : Cfg.cfg) outVar =
   Printf.printf "\n🚀 Avvio Pipeline di Ottimizzazione...\n";
-  optimize_pipeline cfg 1
+  optimize_pipeline cfg outVar 1
