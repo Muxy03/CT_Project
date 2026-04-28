@@ -1,75 +1,54 @@
 (* TYPES *)
-type e =
+type expr =
   | Var of string
   | Int of int
-  | Add of e * e (* <e> + <e> *)
-  | Sub of e * e (* <e> - <e> *)
-  | Mul of e * e (* <e> * <e> *)
+  | Add of expr * expr         (* <e> + <e> *)
+  | Sub of expr * expr         (* <e> - <e> *)
+  | Mul of expr * expr         (* <e> * <e> *)
 
-type b =
+type bexpr =
   | True
   | False
-  | And of b * b  (* <b> and <b> *) (*TODO: <e> and <e> ?*)
-  | Not of b      (* not <b> *) (*TODO: not <e> ?*)
-  | Less of e * e (* <e> < <e> *)
+  | And of bexpr * bexpr       (* <b> and <b> *)
+  | Not of bexpr               (* not <b>     *)
+  | Less of expr * expr        (* <e> < <e>   *)
 
 type cmd =
-  | CmdParen of cmd      (* (<cmd>) *)
-  | Assign of string * e (* <var> := <e> *)
-  | Seq of cmd * cmd     (* <cmd>;<cmd> *)
-  | If of b * cmd * cmd  (* if <b> then <cmd> else <cmd> *)
-  | While of b * cmd     (* while <b> do <cmd> *)
   | Skip
+  | CmdParen of cmd          (* (<cmd>)                      *)
+  | Assign of string * expr  (* <var> := <e>                 *)
+  | Seq of cmd * cmd         (* <cmd>;<cmd>                  *)
+  | While of bexpr * cmd     (* while <b> do <cmd>           *)
+  | If of bexpr * cmd * cmd  (* if <b> then <cmd> else <cmd> *)
 
-type inputVar = InputVar of string * int option
-
-type prog =
-  | Prog of inputVar * string * cmd (* def main with input <var> output <var> as <cmd> *)
+type program =
+  | Program of string * string * cmd
+  (* def main with input <var> output <var> as <cmd> *)
 
 (* HELPERS *)
-let rec string_of_e = function
-  | Var v -> "Var(\"" ^ v ^ "\")"
-  | Int i -> "Int(" ^ string_of_int i ^ ")"
-  | Add (e1, e2) -> "Add(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
-  | Sub (e1, e2) -> "Sub(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
-  | Mul (e1, e2) -> "Mul(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
+let rec string_of_cmd c = match c with
+  | Assign (v, e)  -> "Assign(Var(\"" ^ v ^ "\"), " ^ string_of_expr e ^ ")"
+  | Seq (c1, c2)   -> "Seq(\n" ^ string_of_cmd c1 ^ ",\n" ^ string_of_cmd  c2 ^ "\n" ^ ")"
+  | If (b, c1, c2) -> "If(" ^ string_of_bexpr b ^ ",\n" ^ string_of_cmd c1 ^ ",\n" ^ string_of_cmd c2 ^ "\n" ^ ")"
+  | While (b, c)   -> "While(" ^ string_of_bexpr b ^ ",\n" ^ string_of_cmd c ^ "\n" ^ ")"
+  | CmdParen c     -> "CmdParen(\n" ^ string_of_cmd  c ^ "\n" ^ ")"
+  | Skip           -> "skip"
+
+and string_of_program p = match p with
+  | Program (input, output, cmd) -> "Program(\n" ^ "  input " ^ input ^ ",\n" ^ "  output " ^ output ^ ",\n" ^ (string_of_cmd cmd) ^ "  " ^ "\n" ^ ")"
 
 
-let rec string_of_b = function
-  | True -> "True"
-  | False -> "False"
-  | And (b1, b2) -> "And(" ^ string_of_b b1 ^ ", " ^ string_of_b b2 ^ ")"
-  | Not b -> "Not(" ^ string_of_b b ^ ")"
-  | Less (e1, e2) -> "Less(" ^ string_of_e e1 ^ ", " ^ string_of_e e2 ^ ")"
+and string_of_expr e = match e with
+  | Var v        -> "Var(\"" ^ v ^ "\")"
+  | Int i        -> "Int(" ^ string_of_int i ^ ")"
+  | Add (e1, e2) -> "Add(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | Sub (e1, e2) -> "Sub(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | Mul (e1, e2) -> "Mul(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
 
 
-let rec string_of_cmd ind = function
-  | Assign (v, e) -> ind ^ "Assign(Var(\"" ^ v ^ "\"), " ^ string_of_e e ^ ")"
-  | Seq (c1, c2) ->
-      ind ^ "Seq(\n"
-      ^ string_of_cmd (ind ^ "  ") c1
-      ^ ",\n"
-      ^ string_of_cmd (ind ^ "  ") c2
-      ^ "\n" ^ ind ^ ")"
-  | If (b, c1, c2) ->
-      ind ^ "If(" ^ string_of_b b ^ ",\n"
-      ^ string_of_cmd (ind ^ "  ") c1
-      ^ ",\n"
-      ^ string_of_cmd (ind ^ "  ") c2
-      ^ "\n" ^ ind ^ ")"
-  | While (b, c) ->
-      ind ^ "While(" ^ string_of_b b ^ ",\n"
-      ^ string_of_cmd (ind ^ "  ") c
-      ^ "\n" ^ ind ^ ")"
-  | CmdParen c -> ind ^ "CmdParen(\n" ^ string_of_cmd (ind ^ "  ") c ^ "\n" ^ ind ^ ")"
-  | Skip -> ind ^ "skip"
-
-let string_of_prog = function
-  | Prog (input, output, cmd) ->
-      let input_str =
-        match input with
-        | InputVar (name, None) -> name
-        | InputVar (name, Some default) -> name ^ " := " ^ string_of_int default
-      in
-      "Prog(\n" ^ "  input " ^ input_str ^ ",\n" ^ "  output " ^ output ^ ",\n"
-      ^ string_of_cmd "  " cmd ^ "\n" ^ ")"
+and string_of_bexpr b = match b with
+  | And (b1, b2)  -> "And(" ^ string_of_bexpr b1 ^ ", " ^ string_of_bexpr b2 ^ ")"
+  | Not b         -> "Not(" ^ string_of_bexpr b ^ ")"
+  | Less (e1, e2) -> "Less(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | True          -> "True"
+  | False         -> "False"

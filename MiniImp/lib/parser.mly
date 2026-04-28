@@ -19,38 +19,29 @@ open Ast
 %token TIMES
 %token EOF
 
-/* Operator Precedences and Associativity
+/*
+  Operator Precedences and Associativity
   Ordered from lowest precedence (top) to highest precedence (bottom).
 */
-%right ELSE DO
-%right SEMI
-%left AND
-%nonassoc NOT
-%left PLUS MINUS
-%left TIMES
+%right    ELSE 
+%right    DO
+%left     SEMI
+%left     AND
+%nonassoc NOT         /* unary operator */
+%nonassoc LESS        /* unary operator */
+%left     PLUS MINUS
+%left     TIMES
+%nonassoc UMINUS      /* unary operator */
 
 /* Entry point of the grammar */
-%start <Ast.prog> program
+%start <Ast.program> program
 
 %%
 
-input_decl:
-  | v=VAR 
-      { InputVar(v, None) }
-  | v=VAR ASSIGN i=INT 
-      { InputVar(v, Some i) }
-;
-
 program:
-  | DEF MAIN WITH INPUT input=input_decl OUTPUT output=VAR AS c=cmd EOF
-      { Prog(input, output, c) }
+  | DEF MAIN WITH INPUT input=VAR OUTPUT output=VAR AS c=cmd EOF
+       { Program(input, output, c) }
 ;
-
-// program:
-//   | DEF MAIN WITH INPUT input=VAR OUTPUT output=VAR AS c=cmd EOF
-//       /* We default the int option for InputVar to None since it's not in the grammar */
-//       { Prog(InputVar(input, None), OutputVar(output), c) }
-// ;
 
 cmd:
   | LPAREN c=cmd RPAREN
@@ -78,6 +69,10 @@ expr:
       { Sub(e1, e2) }
   | e1=expr TIMES e2=expr
       { Mul(e1, e2) }
+  | MINUS e=expr %prec UMINUS /* negative numbers */ 
+    { Sub(Int 0, e) }
+  | LPAREN e=expr RPAREN
+  	{ e }
 ;
 
 bexpr:

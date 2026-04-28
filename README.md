@@ -41,8 +41,6 @@
 Implementation's Choice:
 - depedencies: melheir ocamllex
 MiniImp:
-  - support input_var:=value to set init value for input variable
-  - the body of the program is wrapped automatically in CmdParen
   - hash table for memory (w.h.p constant time operation)
   - "%right ELSE DO" to avoid "shift/reduce conflicts were arbitrarily resolved" 
     - %right ELSE DO before %right SEMI
@@ -55,4 +53,4 @@ TODO:
 - MiniFun: Check Typecheckers
 - MiniFun: Check test 3 of part 4
 - MiniFun: Collect implementation choice
-- MiniImp: Dataflow.pdf
+- MiniImp: Collect implementation choice

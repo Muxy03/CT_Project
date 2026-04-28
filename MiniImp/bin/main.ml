@@ -2,37 +2,55 @@ open MiniImp
 
 (* HELPERS *)
 let read_file path =
-  let ic = open_in path in
-  let n = in_channel_length ic in
-  let s = Bytes.create n in
-  really_input ic s 0 n ;
-  close_in ic ;
-  Bytes.to_string s
+  try
+    let ic = open_in path in
+    let n  = in_channel_length ic in
+    let s  = Bytes.create n in
+    really_input ic s 0 n;
+    close_in ic;
+    Bytes.to_string s
+  with Sys_error msg ->
+    Printf.eprintf "Error: %s\n" msg;
+    exit 1
 
+let write_file path content =
+  try
+    let oc = open_out path in
+    output_string oc content;
+    output_char oc '\n';
+    close_out oc
+  with Sys_error msg ->
+    Printf.eprintf "Error: %s\n" msg;
+    exit 1
 
-let parse_string str =
-  let lexbuf = Lexing.from_string str in
-  try Parser.program Lexer.read lexbuf with
+let parse_string src =
+  let lexbuf = Lexing.from_string src in
+  try Parser.program Lexer.read lexbuf
+  with
   | Lexer.SyntaxError msg ->
-      Printf.eprintf "Lexing error: %s\n" msg ;
+      Printf.eprintf "LexerError: %s\n" msg;
       exit 1
   | Parser.Error ->
-      Printf.eprintf "Parsing error around character %d\n" (Lexing.lexeme_start lexbuf) ;
+      Printf.eprintf "ParserError: %d\n" (Lexing.lexeme_start lexbuf);
       exit 1
 
-
 let () =
-  let sample_code = read_file Sys.argv.(1) in
-
-  Printf.printf "--- Source Code ---\n%s\n\n" sample_code ;
-
-  let ast = parse_string sample_code in
-
-  Printf.printf "--- Abstract Syntax Tree ---\n%s\n" (Ast.string_of_prog ast) ;
-
-  try
-    let result = Runtime.eval ast in
-    Printf.printf "--- Result ---\n%s\n" (Runtime.string_of_value result)
-  with Runtime.RuntimeError msg ->
-    Printf.eprintf "--- Runtime Error ---\n%s\n" msg ;
+  if Array.length Sys.argv < 2 then 
+  begin
+    Printf.eprintf "Usage: %s <file>\n" Sys.argv.(0);
     exit 1
+  end;
+  let ast = Sys.argv.(1) |> read_file |> parse_string in
+  match ast with
+  | Ast.Program (input_name, output_name, cmd) ->
+      let cfg = Cfg.generate_cfg cmd in
+      Optimize.optimize cfg;
+      let ir = Llvm.generate_llvm_ir cfg input_name output_name in
+      write_file "output.ll" ir;
+      Printf.printf "✅ Codice IR salvato in: output.ll\n";
+      (try
+        let result = Runtime.eval ast in
+        Printf.printf "--- Risultato (Interprete) ---\n%s\n"
+          (Runtime.string_of_value result)
+       with Runtime.RuntimeError msg ->
+        Printf.eprintf "Runtime Error: %s\n" msg)

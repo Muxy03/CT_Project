@@ -60,7 +60,8 @@ let string_of_token t =
       | TLess -> "<"
       | TPlus -> "+"
       | TMinus -> "-"
-      | TTimes -> "*")
+      | TTimes -> "*"
+  )
   | TSem -> ";"
   | TLParent -> "("
   | TRParent -> ")"
