@@ -22,33 +22,32 @@ type cmd =
   | If of bexpr * cmd * cmd  (* if <b> then <cmd> else <cmd> *)
 
 type program =
-  | Program of string * string * cmd
-  (* def main with input <var> output <var> as <cmd> *)
+  | Program of string * string * cmd (* def main with input <var> output <var> as <cmd> *)
 
 (* HELPERS *)
 let rec string_of_cmd c = match c with
-  | Assign (v, e)  -> "Assign(Var(\"" ^ v ^ "\"), " ^ string_of_expr e ^ ")"
-  | Seq (c1, c2)   -> "Seq(\n" ^ string_of_cmd c1 ^ ",\n" ^ string_of_cmd  c2 ^ "\n" ^ ")"
-  | If (b, c1, c2) -> "If(" ^ string_of_bexpr b ^ ",\n" ^ string_of_cmd c1 ^ ",\n" ^ string_of_cmd c2 ^ "\n" ^ ")"
-  | While (b, c)   -> "While(" ^ string_of_bexpr b ^ ",\n" ^ string_of_cmd c ^ "\n" ^ ")"
-  | CmdParen c     -> "CmdParen(\n" ^ string_of_cmd  c ^ "\n" ^ ")"
+  | Assign (v, e)  -> Printf.sprintf "Assign(Var(%s), %s)" v  (string_of_expr e)
+  | Seq (c1, c2)   -> Printf.sprintf "Seq(\n %s, \n %s \n)"   (string_of_cmd c1) (string_of_cmd c2)
+  | If (b, c1, c2) -> Printf.sprintf "If(%s,\n %s, \n %s \n)" (string_of_bexpr b) (string_of_cmd c1) (string_of_cmd c2)
+  | While (b, c)   -> Printf.sprintf "While(%s, \n %s \n)"    (string_of_bexpr b) (string_of_cmd c)
+  | CmdParen c     -> Printf.sprintf "CmdParen(\n %s \n)"     (string_of_cmd c)
   | Skip           -> "skip"
 
 and string_of_program p = match p with
-  | Program (input, output, cmd) -> "Program(\n" ^ "  input " ^ input ^ ",\n" ^ "  output " ^ output ^ ",\n" ^ (string_of_cmd cmd) ^ "  " ^ "\n" ^ ")"
+  | Program (input, output, cmd) -> Printf.sprintf "Program(\n input %s,\n output %s,\n %s \n)" input output (string_of_cmd cmd)
 
 
 and string_of_expr e = match e with
-  | Var v        -> "Var(\"" ^ v ^ "\")"
-  | Int i        -> "Int(" ^ string_of_int i ^ ")"
-  | Add (e1, e2) -> "Add(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
-  | Sub (e1, e2) -> "Sub(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
-  | Mul (e1, e2) -> "Mul(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | Var v        -> Printf.sprintf "Var(%s)" v
+  | Int i        -> Printf.sprintf "Int(%s)"     (string_of_int i)
+  | Add (e1, e2) -> Printf.sprintf "Add(%s, %s)" (string_of_expr e1) (string_of_expr e2)
+  | Sub (e1, e2) -> Printf.sprintf "Sub(%s, %s)" (string_of_expr e1) (string_of_expr e2)
+  | Mul (e1, e2) -> Printf.sprintf "Mul(%s, %s)" (string_of_expr e1) (string_of_expr e2)
 
 
 and string_of_bexpr b = match b with
-  | And (b1, b2)  -> "And(" ^ string_of_bexpr b1 ^ ", " ^ string_of_bexpr b2 ^ ")"
-  | Not b         -> "Not(" ^ string_of_bexpr b ^ ")"
-  | Less (e1, e2) -> "Less(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | And (b1, b2)  -> Printf.sprintf "And(%s, %s)"  (string_of_bexpr b1) (string_of_bexpr b2)
+  | Not b         -> Printf.sprintf "Not(%s)"      (string_of_bexpr b)
+  | Less (e1, e2) -> Printf.sprintf "Less(%s, %s)" (string_of_expr e1) (string_of_expr e2)
   | True          -> "True"
   | False         -> "False"

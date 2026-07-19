@@ -9,17 +9,10 @@ let read_file path =
   close_in ic ;
   Bytes.to_string s
 
-
-let parse_string str =
-  let lexbuf = Lexing.from_string str in
-  try Parser.prog Lexer.read lexbuf with
-  | Lexer.SyntaxError msg ->
-      Printf.eprintf "Lexing error: %s\n" msg ;
-      exit 1
-  | Parser.Error ->
-      Printf.eprintf "Parsing error around character %d\n" (Lexing.lexeme_start lexbuf) ;
-      exit 1
-
+let parse_string (src : string) : MiniFun.Ast.expr =
+  try MiniFun.Parser.parse src with
+  | MiniFun.Lexer.SyntaxError msg -> failwith (Printf.sprintf"Lexing error: %s" msg)
+  | MiniFun.Parser.ParseError msg -> failwith (Printf.sprintf"Parsing error: %s" msg)
 
 let () =
   let sample_code = read_file Sys.argv.(1) in

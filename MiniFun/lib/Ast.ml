@@ -1,10 +1,10 @@
 (* TYPES *)
-type typo = 
+type typo =
 | Int
 | Bool
 | Fun of typo * typo
 
-type tenv = (string * typo) list
+type env = (string * typo) list
 
 type binop =
   | Add
@@ -26,7 +26,7 @@ type expr =
   | LetFun of string * string * typo option * expr * expr
 
 (* HELPERS *)
-let string_of_binop op = match op with 
+let string_of_binop op = match op with
   | Add -> "+"
   | Sub -> "-"
   | Mul -> "*"
@@ -38,12 +38,12 @@ let rec string_of_typo t = match t with
   | Bool -> "bool"
   | Fun (t1, t2) -> Printf.sprintf "(%s -> %s)" (string_of_typo t1) (string_of_typo t2)
 
-let rec string_of_expr (e:expr) = match e with 
+let rec string_of_expr (e:expr) = match e with
     | Num i -> string_of_int i
     | Boolean b -> string_of_bool b
     | Var x -> x
     | App (e1, e2) -> Printf.sprintf "(%s) %s" (string_of_expr e1) (string_of_expr e2)
-    | Binop (op, e1, e2) -> Printf.sprintf "(%s %s %s)" (string_of_expr e1) (string_of_binop op) (string_of_expr e2) 
+    | Binop (op, e1, e2) -> Printf.sprintf "(%s %s %s)" (string_of_expr e1) (string_of_binop op) (string_of_expr e2)
     | Not e -> Printf.sprintf "Not(%s)" (string_of_expr e)
     | Func (x, t, body) -> (
       match t with
@@ -57,4 +57,3 @@ let rec string_of_expr (e:expr) = match e with
       | Some typ ->   Printf.sprintf "letfun %s %s : %s = \n %s \n in \n %s" f x (string_of_typo typ) (string_of_expr e1) (string_of_expr e2)
       | None ->   Printf.sprintf "letfun %s %s = \n %s \n in \n %s" f x (string_of_expr e1) (string_of_expr e2)
     )
-    

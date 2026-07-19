@@ -17,11 +17,9 @@ let string_of_value v = match v with
 
 let mem_get mem var = match Hashtbl.find_opt mem var with
   | Some v -> v
-  | None   -> raise (RuntimeError ("Not found variable: " ^ var))
+  | None   -> raise (RuntimeError (Printf.sprintf "Not found variable: %s" var))
 
-let mem_set mem var value =
-  Hashtbl.replace mem var value;
-  mem
+let mem_set mem var value = Hashtbl.replace mem var value; mem
 
 let mem_create () : memory = Hashtbl.create 69
 
@@ -53,11 +51,12 @@ let rec eval_bexpr mem b = match b with
       | _            -> raise (RuntimeError "Type error in '<' operation"))
 
 let rec eval_cmd mem c = match c with
-  | Ast.Assign (v, e) -> 
+  | Ast.Assign (v, e) ->
   	let value = eval_expr mem e in
-  	if value = Undefined then 
-    	raise (RuntimeError ("Variable '" ^ v ^ "' assigned to undefined value"))
-    else
+     	if value = Undefined
+      then
+       	raise (RuntimeError (Printf.sprintf "Variable %s assigned to undefined value" v))
+      else
         mem_set mem v value
   | Ast.Seq (c1, c2) -> eval_cmd (eval_cmd mem c1) c2
   | Ast.If (b, c1, c2) -> (match eval_bexpr mem b with
@@ -75,9 +74,9 @@ let rec eval_cmd mem c = match c with
 let eval program = match program with
   | Ast.Program (input_name, output_name, cmd) ->
       let mem  = mem_create () in
-      let mem0 =
-        let m1 = mem_set mem input_name  Undefined in
-        let m2 = mem_set m1  output_name Undefined in m2
-      in
-      let mem1 = eval_cmd mem0 cmd in
-      mem_get mem1 output_name
+        let mem0 =
+          let m1 = mem_set mem input_name  Undefined in
+          let m2 = mem_set m1  output_name Undefined in m2
+        in
+          let mem1 = eval_cmd mem0 cmd in
+            mem_get mem1 output_name

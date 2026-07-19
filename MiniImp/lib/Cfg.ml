@@ -14,15 +14,15 @@ type nextNode =
   | CondSelect of nodeId * nodeId
 
 type node = {
-    id   : nodeId
-  ; code : blockCode
-  ; mutable next : nextNode
+  id   : nodeId;
+  code : blockCode;
+  mutable next : nextNode
 }
 
 type cfg = {
-    nodes : (nodeId, node) Hashtbl.t
-  ; i : nodeId  (* Entry node *)
-  ; f : nodeId  (* Exit node  *)
+  nodes : (nodeId, node) Hashtbl.t;
+  i : nodeId; (* Entry node *)
+  f : nodeId  (* Exit node  *)
 }
 
 (* Counter of nodes *)
@@ -38,12 +38,12 @@ let successors node =
   | CondSelect (a, b)  ->  [a; b]
 
 let string_of_blockCode block = match block with
-  | Stmt (Ast.Assign (x, e))  -> x ^ " := " ^ Ast.string_of_expr e
+  | Stmt (Ast.Assign (v, e))  -> Printf.sprintf "%s := %s" v (Ast.string_of_expr e)
   | Stmt Ast.Skip             -> "skip"
+  | Condition b               -> Printf.sprintf "%s?" (Ast.string_of_bexpr b)
   | Stmt _                    -> "<complex stmt>"
-  | Condition b               -> Ast.string_of_bexpr b ^ " ?"
 
-let string_of_next next = match next with 
+let string_of_next next = match next with
   | EOF               -> "EOF"
   | NextBlock n       -> Printf.sprintf "--> %d" n
   | CondSelect (t, f) -> Printf.sprintf "-True-> %d | -False-> %d" t f
@@ -53,7 +53,7 @@ let print_cfg cfg =
   Printf.printf "Entry Node : %d\n" cfg.i;
   Printf.printf "Exit Node  : %d\n" cfg.f;
   Printf.printf "------------------------------------------------------\n";
-  let nodes = 
+  let nodes =
     Hashtbl.fold (fun _ node acc -> node :: acc) cfg.nodes []
     |> List.sort (fun n1 n2 -> compare n1.id n2.id)
   in
