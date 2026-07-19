@@ -161,7 +161,7 @@ let run_tests () =
   (* Fresh type-variable names depend on AlgoW's internal counter, so the
      exact numbering below may need adjusting if that counter's starting
      point or increment order changes. *)
-  test_alg_w "Higher-order function" "fun f => fun x => f x" "('a1 -> ('a2 -> 'a3))";
+  test_alg_w "Higher-order function" "fun f => fun x => f x" "(('a3 -> 'a4) -> ('a3 -> 'a4))";
   test_alg_w "Polymorphic let-generalization"
     "let id = fun x => x in if id true then id 1 else 0" "int";
   test_alg_w "Recursive inference (letfun)"

@@ -9,10 +9,12 @@ let read_file path =
   close_in ic ;
   Bytes.to_string s
 
+
 let parse_string (src : string) : MiniFun.Ast.expr =
   try MiniFun.Parser.parse src with
-  | MiniFun.Lexer.SyntaxError msg -> failwith (Printf.sprintf"Lexing error: %s" msg)
-  | MiniFun.Parser.ParseError msg -> failwith (Printf.sprintf"Parsing error: %s" msg)
+  | MiniFun.Lexer.SyntaxError msg -> failwith (Printf.sprintf "Lexing error: %s" msg)
+  | MiniFun.Parser.ParseError msg -> failwith (Printf.sprintf "Parsing error: %s" msg)
+
 
 let () =
   let sample_code = read_file Sys.argv.(1) in

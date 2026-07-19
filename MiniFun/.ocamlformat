@@ -4,7 +4,7 @@ version = 0.28.1
 profile = conventional
 
 # Line width
-margin = 90
+margin = 100
 
 # Expressions
 break-separators = before
@@ -17,6 +17,7 @@ field-space = loose
 
 # Let bindings
 let-binding-spacing = sparse
+assignment-operator = end-line
 
 # Parens
 parens-ite = false
@@ -25,3 +26,6 @@ parens-ite = false
 wrap-comments = true
 doc-comments = before
 doc-comments-padding = 2
+
+# Multiline
+indicate-multiline-delimiters = space
