@@ -1,20 +1,13 @@
 # CT_Project — Compilation Techniques
 
-Two compilers for the Compilation Techniques course at the University of Pisa:
-
-- **MiniImp** — A minimal imperative language with data-flow analysis, optimizations, and LLVM IR code generation.
-- **MiniFun** — A minimal functional language with type checking (simple + Hindley-Milner / Algorithm W) and an environment-based interpreter.
-
-Both subprojects use **hand-written** lexers and parsers (no `ocamllex`/`menhir` generators).
-
 ## Project Structure
 
 ```
 ├── MiniFun/
 │   ├── lib/
 │   │   ├── Ast.ml           — AST definitions
-│   │   ├── Lexer.ml         — Hand-written lexer
-│   │   ├── Parser.ml        — Hand-written parser (recursive descent)
+│   │   ├── Lexer.ml         — Lexer
+│   │   ├── Parser.ml        — Parser (recursive descent)
 │   │   ├── RunTime.ml       — Interpreter (environment-based, closures)
 │   │   ├── TypeChecker.ml   — Simple annotation-based type checker
 │   │   └── AlgoW.ml         — Algorithm W (Hindley-Milner inference)
@@ -25,8 +18,8 @@ Both subprojects use **hand-written** lexers and parsers (no `ocamllex`/`menhir`
 ├── MiniImp/
 │   ├── lib/
 │   │   ├── Ast.ml           — AST definitions
-│   │   ├── Lexer.ml         — Hand-written lexer
-│   │   ├── Parser.ml        — Hand-written parser (recursive descent)
+│   │   ├── Lexer.ml         — Lexer
+│   │   ├── Parser.ml        — Parser (recursive descent)
 │   │   ├── Runtime.ml       — Interpreter
 │   │   ├── Cfg.ml           — Control-flow graph construction
 │   │   ├── DataFlow.ml      — Liveness analysis, reaching definitions

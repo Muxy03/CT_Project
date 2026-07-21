@@ -1,6 +1,6 @@
-(* Simple annotation-based type checker for MiniFun. Implements the standard typing rules from the
-   course notes (Γ ⊢ t : τ). Function parameters and letfun require explicit type annotations — no
-   inference (see AlgoW.ml for full Hindley-Milner inference). *)
+(*
+  Implements the standard typing rules from the course notes (\Gamma \vdash t : \tau). Function parameters and letfun require explicit type annotations no inference
+*)
 
 open Ast
 

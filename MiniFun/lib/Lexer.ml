@@ -1,8 +1,3 @@
-(* Hand-written lexer for MiniFun.
-
-   Single-pass character scanner with one-position lookahead for multi-character operators (=>, ->,
-   &&). Tokens are accumulated and reversed at the end. *)
-
 (* EXCEPTIONS *)
 exception SyntaxError of string
 

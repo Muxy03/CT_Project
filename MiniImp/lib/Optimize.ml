@@ -1,15 +1,16 @@
-(* HELPERS — Replaces a node's code block, marks pipeline as changed, prints diagnostic *)
+(* HELPERS *)
+(* Replaces a node's code block, marks pipeline as changed, prints diagnostic *)
 let update_node (cfg : Cfg.cfg) id node block changed msg =
   Hashtbl.replace cfg.nodes id { node with Cfg.code = block } ;
   changed := true ;
   Printf.printf "%s\n" msg
 
 
-(* DEAD STORE ELIMINATION
-
+(*
+DEAD STORE ELIMINATION
    Removes assignments to variables that are never used afterwards. Uses liveness analysis (backward
-   dataflow): if v ∉ liveOut[n] and v is not the program output, the assignment is replaced by
-   skip. *)
+   dataflow): if v \notin liveOut[n] and v is not the program output, the assignment is replaced by skip.
+*)
 let dead_store_elimination (cfg : Cfg.cfg) outVar =
   let liveness_map = DataFlow.compute_live_variables cfg in
   let changed = ref false in
@@ -26,10 +27,11 @@ let dead_store_elimination (cfg : Cfg.cfg) outVar =
   !changed
 
 
-(* CONSTANT FOLDING
-
+(*
+CONSTANT FOLDING
    Simplifies expressions whose operands are all statically known literals. E.g.: (2 + 3) * 4 → 20.
-   Applies recursively to expose nested foldable sub-expressions. *)
+   Applies recursively to expose nested foldable sub-expressions.
+*)
 
 let rec fold_expr e =
   match e with
@@ -89,11 +91,12 @@ let constant_folding (cfg : Cfg.cfg) =
   !changed
 
 
-(* CONSTANT PROPAGATION
-
+(*
+CONSTANT PROPAGATION
    Replaces variable references with their constant values when reaching definitions (forward
    dataflow) show that all reaching definitions assign the same constant. E.g.: a := 10; b := a + 2
-   → b := 10 + 2 (then folding turns this into 12). *)
+   → b := 10 + 2 (then folding turns this into 12).
+*)
 let get_constant_value var inDefs (cfg : Cfg.cfg) =
   let relevant =
     DataFlow.DefSet.filter
@@ -162,12 +165,13 @@ let constant_propagation (cfg : Cfg.cfg) =
   !changed
 
 
-(* OPTIMIZATION PIPELINE
-
+(*
+OPTIMIZATION PIPELINE
    Runs the three passes (propagation → folding → dead store elimination) iteratively until a
    fixpoint is reached. Each pass can enable opportunities for the others: e.g., propagation enables
    folding, which enables dead-store elimination, which may expose more propagation
-   opportunities. *)
+   opportunities.
+*)
 
 let rec optimize_pipeline (cfg : Cfg.cfg) outVar iter =
   Printf.printf "\n--- Iteration #%d ---\n" iter ;

@@ -1,13 +1,13 @@
-(* Hand-written recursive-descent parser for MiniFun.
+(*
+  Precedence chain (lowest to highest): parse_expr / parse_special_form (fun, if, let, letfun)
+  parse_and (&&, left-assoc) parse_lt (<, left-assoc) parse_plus_minus (+ -, left-assoc) parse_star
+  (star, left-assoc) parse_operand / parse_app (prefix NOT, function application) parse_base
+  (literals, variables, parens)
 
-   Precedence chain (lowest to highest): parse_expr / parse_special_form (fun, if, let, letfun)
-   parse_and (&&, left-assoc) parse_lt (<, left-assoc) parse_plus_minus (+ -, left-assoc) parse_star
-   (star, left-assoc) parse_operand / parse_app (prefix NOT, function application) parse_base
-   (literals, variables, parens)
+   Function application is parsed as a left-associative while-loop. Types are parsed separately by parse_typo / parse_typo_atom (TARROW is right-assoc).
+*)
 
-   Function application is parsed as a left-associative while-loop. Types are parsed separately by
-   parse_typo / parse_typo_atom (TARROW is right-assoc). *)
-
+(* MODULES *)
 open Ast
 open Lexer
 
@@ -114,6 +114,7 @@ let parse (src : string) : Ast.expr =
         let e2 = parse_expr () in
         LetFun (f, x, t, e1, e2)
     | t -> raise (ParseError (Printf.sprintf "unexpected token: %s" (Lexer.string_of_token t)))
+
   (* Function application is left-associative: f a b parses as ((f a) b) *)
   and parse_app () =
     let lhs = ref (parse_base ()) in
@@ -140,6 +141,7 @@ let parse (src : string) : Ast.expr =
         raise
           (ParseError
              (Printf.sprintf "unexpected token in expression: %s" (Lexer.string_of_token t)) )
+
   and parse_star () =
     let lhs = ref (parse_operand ()) in
     let continue_ = ref true in
@@ -152,6 +154,7 @@ let parse (src : string) : Ast.expr =
       | _ -> continue_ := false
     done ;
     !lhs
+
   and parse_plus_minus () =
     let lhs = ref (parse_star ()) in
     let continue_ = ref true in
@@ -168,6 +171,7 @@ let parse (src : string) : Ast.expr =
       | _ -> continue_ := false
     done ;
     !lhs
+
   and parse_lt () =
     let lhs = ref (parse_plus_minus ()) in
     let continue_ = ref true in
@@ -180,6 +184,7 @@ let parse (src : string) : Ast.expr =
       | _ -> continue_ := false
     done ;
     !lhs
+
   and parse_and () =
     let lhs = ref (parse_lt ()) in
     let continue_ = ref true in
@@ -192,6 +197,7 @@ let parse (src : string) : Ast.expr =
       | _ -> continue_ := false
     done ;
     !lhs
+
   and parse_expr () =
     match peek () with FUN | IF | LET | LETFUN -> parse_special_form () | _ -> parse_and ()
   in

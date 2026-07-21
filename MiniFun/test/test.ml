@@ -27,9 +27,7 @@ let rec string_of_mono m= match m with
   | MiniFun.AlgoW.TVar a -> a
   | MiniFun.AlgoW.TFun (t1, t2) -> Printf.sprintf "(%s -> %s)" (string_of_mono t1) (string_of_mono t2)
 
-(* -------------------------------------------------------------------- *)
-(* Fragment 1: parser                                                   *)
-(* -------------------------------------------------------------------- *)
+(* Fragment 1 *)
 let test_parse name code expected_ast =
   let outcome =
     try
@@ -40,9 +38,7 @@ let test_parse name code expected_ast =
   in
     record name outcome
 
-(* -------------------------------------------------------------------- *)
-(* Fragment 2: runtime / semantics                                      *)
-(* -------------------------------------------------------------------- *)
+(* Fragment 2 *)
 let test_eval name code expected_value =
   let outcome =
     try
@@ -66,9 +62,7 @@ let test_eval_fail name code =
   in
     record name outcome
 
-(* -------------------------------------------------------------------- *)
-(* Fragment 3: simple (non-inferring) type system                      *)
-(* -------------------------------------------------------------------- *)
+(* Fragment 3 *)
 let test_simple_type name code expected_type =
   let outcome =
     try
@@ -92,9 +86,7 @@ let test_simple_fail name code =
   in
   record name outcome
 
-(* -------------------------------------------------------------------- *)
-(* Fragment 4: Algorithm W (Hindley-Milner type inference)              *)
-(* -------------------------------------------------------------------- *)
+(* Fragment 4 *)
 let test_alg_w name code expected_type_str =
   let outcome =
     try
@@ -118,7 +110,7 @@ let test_alg_w_fail name code =
     | e -> Failed (Printf.sprintf "wrong exception: %s" (Printexc.to_string e))
   in
   record name outcome
-
+(* TESTS *)
 let run_tests () =
   print_section "FRAGMENT 1: PARSER";
   test_parse "Math precedence"
@@ -158,9 +150,6 @@ let run_tests () =
   print_section "FRAGMENT 4: ALGORITHM W (POLYMORPHISM)";
   test_alg_w "Constant inference" "1 + 2" "int";
   test_alg_w "Identity function" "fun x => x" "('a1 -> 'a1)";
-  (* Fresh type-variable names depend on AlgoW's internal counter, so the
-     exact numbering below may need adjusting if that counter's starting
-     point or increment order changes. *)
   test_alg_w "Higher-order function" "fun f => fun x => f x" "(('a3 -> 'a4) -> ('a3 -> 'a4))";
   test_alg_w "Polymorphic let-generalization"
     "let id = fun x => x in if id true then id 1 else 0" "int";

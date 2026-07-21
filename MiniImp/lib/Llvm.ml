@@ -1,8 +1,9 @@
-(* LLVM IR generation for MiniImp.
-
+(*
+LLVM IR generation for MiniImp.
    Uses a memory-based translation strategy (alloca / store / load for every variable), which avoids
    the need for phi-node insertion. LLVM's `mem2reg` pass (run separately via `opt -passes=mem2reg`)
-   can later promote memory accesses to SSA form. Each CFG node maps to one LLVM basic block. *)
+   can later promote memory accesses to SSA form. Each CFG node maps to one LLVM basic block.
+*)
 
 (* EXCEPTIONS *)
 exception LlvmError of string
@@ -25,10 +26,11 @@ let _fresh_label (c : counters) : string =
   Printf.sprintf "bb_%d" c.label
 
 
-(* Compiles an arithmetic expression into a sequence of LLVM IR instructions. Returns
-   (result_register, instruction_list). Constants are inlined directly; variables must be loaded
-   from their alloca slot; compound expressions are decomposed into fresh temporaries
-   (RISC-like). *)
+(*
+  Compiles an arithmetic expression into a sequence of LLVM IR instructions.
+  Returns (result_register, instruction_list).
+  Constants are inlined directly; variables must be loaded from their alloca slot; compound expressions are decomposed into fresh temporaries (RISC-like).
+*)
 let rec compile_expr counters e =
   match e with
   | Ast.Int i -> (string_of_int i, [])

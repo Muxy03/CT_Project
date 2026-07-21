@@ -71,14 +71,14 @@ let print_cfg cfg =
   Printf.printf "==========================\n\n"
 
 
-(* CFG GENERATION — Inductive construction
-
+(*
+CFG GENERATION
    Each build_cfg call returns (entry_id, exit_id) for the sub-CFG rooted at the given command. This
    compositional style makes sequencing, branching, and looping straightforward: we build child CFGs
    and wire their exit nodes to the appropriate successor.
 
-   Blocks are minimal (one statement or condition per node) to maximise precision for data-flow
-   analysis. *)
+   Blocks are minimal (one statement or condition per node) to maximise precision for data-flow analysis.
+*)
 
 let create_node cfg block =
   let id = fresh_nodeId () in

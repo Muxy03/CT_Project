@@ -1,14 +1,4 @@
-(* MiniImp test suite.
-
-   Exercises the hand-written Manual.Lexer / Manual.Parser together with the
-   rest of the pipeline: CFG construction, data-flow analysis, program
-   optimizations, the interpreter and LLVM IR generation. *)
-
 open MiniImp
-
-(* -------------------------------------------------------------------- *)
-(* Minimal test harness                                                 *)
-(* -------------------------------------------------------------------- *)
 
 type outcome =
   | Passed
@@ -19,9 +9,11 @@ let results : (string * outcome) list ref = ref []
 let print_section title =
   Printf.printf "\n==================== %s ====================\n" title
 
-(* Runs [check] and records the outcome under [name]. [check] is expected to
-   return [true] on success; any exception it raises is caught and reported
-   as a failure instead of aborting the whole suite. *)
+(*
+  Runs [check] and records the outcome under [name]. [check] is expected to
+  return [true] on success; any exception it raises is caught and reported
+  as a failure instead of aborting the whole suite.
+*)
 let test name check =
   let outcome =
     try if check () then Passed else Failed "assertion returned false"
@@ -34,13 +26,8 @@ let test name check =
    | Failed reason -> Printf.printf "  [FAIL] %s -- %s\n" name reason);
   results := (name, outcome) :: !results
 
-(* Convenience wrapper for equality checks: runs [f ()] and compares the
-   result to [expected] with structural equality. *)
+(* Convenience wrapper for equality checks: runs [f ()] and compares the result to [expected] with structural equality. *)
 let test_eq name expected f = test name (fun () -> f () = expected)
-
-(* -------------------------------------------------------------------- *)
-(* Parsing / evaluation helpers built on the hand-written parser         *)
-(* -------------------------------------------------------------------- *)
 
 let parse (src : string) : Ast.program = Parser.parse src
 
@@ -51,8 +38,10 @@ let cfg_of_source src =
 
 let node_count src = Hashtbl.length (cfg_of_source src).nodes
 
-(* Runs the interpreter on [src] with [input] bound to the program's input
-   variable, and returns the final value of its output variable. *)
+(*
+  Runs the interpreter on [src] with [input] bound to the program's input
+  variable, and returns the final value of its output variable.
+*)
 let interpret ~input src =
   match parse src with
   | Ast.Program (input_name, output_name, cmd) ->
@@ -77,10 +66,7 @@ let generate_ir src =
       Optimize.optimize cfg out_v;
       Llvm.generate_llvm_ir cfg in_v out_v
 
-(* -------------------------------------------------------------------- *)
-(* Sample programs                                                      *)
-(* -------------------------------------------------------------------- *)
-
+(* SAMPLE PROGRAMS *)
 let p_skip     = "def main with input in output out as skip"
 let p_assign   = "def main with input in output out as out := in + 1"
 let p_seq      = "def main with input x output y as x := x + 1 ; y := x"
@@ -99,10 +85,6 @@ let p_fold     = "def main with input in output out as out := (2 + 3) * 4"
 let p_prop     = "def main with input in output out as a := 10 ; b := a + 2 ; out := b"
 let p_pipeline = "def main with input in output out as \
                    a := 10 ; b := a + 2 ; c := b * 2 ; out := c"
-
-(* -------------------------------------------------------------------- *)
-(* Lexer                                                                 *)
-(* -------------------------------------------------------------------- *)
 
 let test_lexer () =
   print_section "LEXER (Manual.Lexer)";
@@ -123,10 +105,6 @@ let test_lexer () =
   test "Unknown characters raise SyntaxError" (fun () ->
     try ignore (tokenize "x := 1 @ 2"); false
     with SyntaxError _ -> true)
-
-(* -------------------------------------------------------------------- *)
-(* Parsing                                                               *)
-(* -------------------------------------------------------------------- *)
 
 let test_parsing () =
   print_section "PARSING (Manual.Parser)";
@@ -178,10 +156,6 @@ let test_parsing () =
     try ignore (parse "def main with input output out as skip"); false
     with Parser.ParseError _ -> true)
 
-(* -------------------------------------------------------------------- *)
-(* Interpreter                                                          *)
-(* -------------------------------------------------------------------- *)
-
 let test_semantics () =
   print_section "SEMANTICS (Interpreter)";
 
@@ -197,10 +171,6 @@ let test_semantics () =
       let ast = parse "def main with input in output out as out := noinit" in
       ignore (Runtime.eval ast); false
     with Runtime.RuntimeError _ -> true)
-
-(* -------------------------------------------------------------------- *)
-(* CFG construction                                                     *)
-(* -------------------------------------------------------------------- *)
 
 let test_cfg () =
   print_section "CFG GENERATION";
@@ -229,10 +199,6 @@ let test_cfg () =
   test "Exit node is present in the node table" (fun () ->
     let cfg = cfg_of_source p_while in
     Hashtbl.mem cfg.nodes cfg.f)
-
-(* -------------------------------------------------------------------- *)
-(* Data-flow analysis & optimizations                                   *)
-(* -------------------------------------------------------------------- *)
 
 let test_dataflow () =
   print_section "DATA-FLOW ANALYSIS & OPTIMIZATIONS";
@@ -271,10 +237,6 @@ let test_dataflow () =
         Cfg.print_cfg cfg;
         true)
 
-(* -------------------------------------------------------------------- *)
-(* LLVM IR generation                                                   *)
-(* -------------------------------------------------------------------- *)
-
 let test_llvm () =
   print_section "LLVM IR GENERATION";
 
@@ -300,10 +262,6 @@ let test_llvm () =
     let ir = generate_ir p_while in
     Printf.printf "\n[LLVM IR - Factorial]\n%s\n" ir;
     true)
-
-(* -------------------------------------------------------------------- *)
-(* Entry point                                                          *)
-(* -------------------------------------------------------------------- *)
 
 let () =
   Printf.printf "\nStarting MiniImp test suite...\n";

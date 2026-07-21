@@ -1,13 +1,13 @@
-(* Hand-written recursive-descent parser for MiniImp.
-
-   Precedence is encoded in the call chain — each function parses one precedence level and delegates
+(*
+   Precedence is encoded in the call chain each function parses one precedence level and delegates
    to the next-higher level for its operands: (lowest) parse_cmd_atom (IF, WHILE, assignment)
    parse_cmd (SEMI, left-assoc) parse_bexpr (AND) parse_bnot (NOT, unary prefix) parse_expr
    (comparison via LESS) parse_add (PLUS / MINUS, left-assoc) parse_mul (TIMES, left-assoc)
    parse_unary (unary minus as syntactic sugar) parse_atom (Var, Int, parenthesized exprs) (highest)
 
    The IF production handles the dangling-else by greedily consuming the ELSE branch inside
-   parse_cmd_atom, matching the standard "match closest else." *)
+   parse_cmd_atom, matching the standard "match closest else."
+*)
 
 open Ast
 open Lexer

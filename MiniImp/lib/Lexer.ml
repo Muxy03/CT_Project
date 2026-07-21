@@ -88,8 +88,6 @@ let keyword_or_var w =
   | _ -> VAR w
 
 
-(* Single-pass character scanner. Accumulates tokens in reverse (for efficiency) then reverses the
-   list at the end. Two-character lookahead is used for := . *)
 let tokenize (src : string) : token list =
   let n = String.length src in
   let tokens = ref [] in
@@ -120,7 +118,7 @@ let tokenize (src : string) : token list =
     | '*' ->
         emit TIMES ;
         incr pos
-    (* := is the only two-character token in MiniImp *)
+    (* := is the only two-character token *)
     | ':' ->
         if !pos + 1 < n && src.[!pos + 1] = '=' then begin
           emit ASSIGN ;

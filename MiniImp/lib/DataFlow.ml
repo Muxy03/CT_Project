@@ -59,12 +59,14 @@ let compute_preds (cfg : Cfg.cfg) =
     cfg.nodes init
 
 
-(* LIVENESS ANALYSIS (backward dataflow)
+(*
+LIVENESS ANALYSIS (backward dataflow)
+   Equations:
+    liveOut[n] = \bigcup {liveIn[s] | s \in succ(n)}
+    liveIn[n] = use[n] \cup (liveOut[n] \ def[n])
 
-   Equations: liveOut[n] = ∪{ liveIn[s] | s ∈ succ(n) } liveIn[n] = use[n] ∪ (liveOut[n] \ def[n])
-
-   Uses a worklist algorithm for efficiency: when a node's state changes, its predecessors are
-   re-enqueued. *)
+   Uses a worklist algorithm for efficiency: when a node's state changes, its predecessors are re-enqueued.
+*)
 
 let init_liveness_map (cfg : Cfg.cfg) =
   let empty = { liveIn = VarSet.empty; liveOut = VarSet.empty } in
@@ -101,12 +103,16 @@ let compute_live_variables (cfg : Cfg.cfg) =
   loop initial_wl initial_map
 
 
-(* REACHING DEFINITIONS (forward dataflow)
+(*
+REACHING DEFINITIONS (forward dataflow)
+   Equations:
+    rdIn[n]  = \bigcup{ rdOut[p] | p \in pred(n) }
+    gen[n]   = { n } if n is an assignment to v, else \emptyset
+    kill[n]  = { all assignments to v } \ { n }
+    rdOut[n] = gen[n] \cup (rdIn[n] \ kill[n])
 
-   Equations: rdIn[n] = ∪{ rdOut[p] | p ∈ pred(n) } gen[n] = { n } if n is an assignment to v, else
-   ∅ kill[n] = { all assignments to v } \ { n } rdOut[n] = gen[n] ∪ (rdIn[n] \ kill[n])
-
-   Forward worklist: when a node's state changes, its successors are re-enqueued. *)
+   Forward worklist: when a node's state changes, its successors are re-enqueued.
+*)
 let find_all_defs_of_var (cfg : Cfg.cfg) (var_name : string) : DefSet.t =
   Hashtbl.fold
     (fun id node acc ->
@@ -130,7 +136,7 @@ let compute_reaching_definitions (cfg : Cfg.cfg) : rd_state NodeMap.t =
         let node = Cfg.find_node cfg.nodes n in
         let state_n = NodeMap.find n map in
 
-        (* IN[n] = union of OUT[pred] *)
+        (* IN[n] = \bigcup OUT[pred] *)
         let preds = NodeMap.find n preds_map in
         let new_in =
           List.fold_left
@@ -145,7 +151,7 @@ let compute_reaching_definitions (cfg : Cfg.cfg) : rd_state NodeMap.t =
           | _ -> (DefSet.empty, DefSet.empty)
         in
 
-        (* OUT[n] = gen ∪ (IN[n] \ kill) *)
+        (* OUT[n] = gen \cup (IN[n] \ kill) *)
         let new_out = DefSet.union gen (DefSet.diff new_in kill) in
 
         if DefSet.equal state_n.rdIn new_in && DefSet.equal state_n.rdOut new_out then loop rest map

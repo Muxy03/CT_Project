@@ -1,3 +1,4 @@
+(* MODULES *)
 open Ast
 module SSet = Set.Make (String)
 
@@ -21,7 +22,7 @@ let fresh_tvar () =
 
 let empty_subst : subst = []
 
-(* HELPERS — Substitution, unification, generalisation, and instantiation *)
+(* HELPERS *)
 
 (* Apply a substitution to a monomorphic type, chasing chains of substitutions *)
 let rec apply_mono (s : subst) (t : mono) : mono =
@@ -82,7 +83,7 @@ let rec unify t1 t2 =
   | _ -> failwith "Unification failed: incompatible types"
 
 
-(* Algorithm W: type inference — returns (substitution, inferred_type) *)
+(* Algorithm W: type inference returns (substitution, inferred_type) *)
 
 let rec infer env e : subst * mono =
   match e with
